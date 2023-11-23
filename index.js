@@ -2,15 +2,6 @@ const express = require("express")
 const fs = require("fs")
 const path = require("path");
 
-{/*
-  installation setup
-  1.npm init
-  2.npm i express
-  3.npm i nodemon
-
-*/}
-
-
 const data = [
     {
         id:"1",
