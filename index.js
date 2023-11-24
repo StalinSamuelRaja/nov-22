@@ -1,125 +1,197 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express")
+const fs = require("fs")
+const path = require("path");
 
-const app = express();
-app.use(bodyParser.json());
+const data = [
+    {
+        id:"1",
+        numberOfSeats:100,
+        amenities:["AC","chairs","discolights"],
+        priceForAnHour:1000,
+        ifBooked:"Booked",
+        customerName:"stalin",
+        date:"27-07-2023",
+        startTime:"01-November-2023 at 12am",
+        endTime:"02-November-2023 at 12pm",
+        RoomeId:201,
+        RoomName:"Duplex"
+    },
+    {
+        id:"2",
+        numberOfSeats:50,
+        amenities:["AC","chairs","discolights"],
+        priceForAnHour:"",
+        ifBooked:"vacant",
+        customerName:"",
+        date:"",
+        startTime:"",
+        endTime:"",
+        RoomeId:202,
+        RoomName:"Duplex"
+    },
+    {
+        id:"3",
+        numberOfSeats:20,
+        amenities:["AC","chairs","discolights","internetAccess"],
+        priceForAnHour:2000,
+        ifBooked:"Booked",
+        customerName:"samuel",
+        date:"27-07-2023",
+        startTime:"01-December-2023 at 12am",
+        endTime:"02-December-2023 at 12pm",
+        RoomeId:201,
+        RoomName:"suite"
+    },
+    {
+        id:"4",
+        numberOfSeats:50,
+        amenities:["AC","chairs","discolights"],
+        priceForAnHour:"",
+        ifBooked:"vacant",
+        customerName:"",
+        date:"",
+        startTime:"",
+        endTime:"",
+        RoomeId:202,
+        RoomName:"Duplex"
+    },
+    {
+        id:"5",
+        numberOfSeats:20,
+        amenities:["AC","chairs","discolights","internetAccess"],
+        priceForAnHour:2500,
+        ifBooked:"Booked",
+        customerName:"samuel",
+        date:"27-07-2022",
+        startTime:"01-November-2023 at 12am",
+        endTime:"02-November-2023 at 12pm",
+        RoomeId:201,
+        RoomName:"Duplex"
+    },
+]
 
-//Local variables to store data
+const app = express()
 
-let rooms = [];
-let bookings = [];
-let customers = [];
+app.use(express.json())
 
-//API endpoint for creating room
-app.post('/rooms',(req,res) => {
-    const { roomName , seatsAvailable,amenities,pricePrHr } = req.body;
-    const room = {
-        id : rooms.length + 1,
-        roomName,
-        seatsAvailable,
-        amenities,
-        pricePrHr
-    };
-    rooms.push(room);
-    res.json(room);
-});
-
-//Api endpoint for viewing the added rooms
-app.get('/rooms',(req,res) => {
-    res.json(rooms);
-});
-
-// API endpoint for booking room
-app.post('/booking', (req, res) => {
-  const { customerName, date, startTime, endTime, roomId } = req.body;
-  const room = rooms.find((room) => room.id === roomId);
-
-  if (!room) {
-    res.status(404).json({ error: 'Room not Found' });
-    return;
-  }
-
-  const existingBooking = bookings.find(
-    (booking) =>
-      booking.roomId === roomId &&
-      booking.date === date &&
-      (
-        (startTime >= booking.startTime && startTime < booking.endTime) ||
-        (endTime > booking.startTime && endTime <= booking.endTime) ||
-        (startTime <= booking.startTime && endTime >= booking.endTime)
-      )
-  );
-
-  if (existingBooking) {
-    res.status(409).json({ error: 'Room already booked at the specified time' });
-    return;
-  }
-
-  const booking = {
-    id: bookings.length + 1,
-    customerName,
-    date,
-    startTime,
-    endTime,
-    roomId,
-    roomName: room.roomName,
-    bookedStatus: true,
-  };
-
-  bookings.push(booking);
-
-  const customer = customers.find((cust) => cust.name === customerName);
-
-  if (customer) {
-    customer.bookings.push(booking);
-  } else {
-    customers.push({ name: customerName, bookings: [booking] });
-  }
-
-  res.json(booking);
-});
-
-//API endpoint to list all booked rooms
-app.get('/viewbooking',(req,res) => {
-    const bookedRooms = bookings.map(booking => {
-        const {roomName ,bookedStatus,customerName,date,startTime,endTime} = booking;
-        return {roomName ,bookedStatus,customerName,date,startTime,endTime} 
-    });
-    res.json(bookedRooms);
-});
-
-// API endpoint to list customers with booked data
-app.get('/customers', (req, res) => {
-    const customerBookings = customers.map(customer => {
-      const { name, bookings } = customer;
-      const customerDetails = bookings.map(booking => {
-        const { roomName, date, startTime, endTime } = booking;
-        return { name, roomName, date, startTime, endTime };
-      });
-      return customerDetails;
-    }).flat();
-    res.json(customerBookings);
+app.get("/", function (req, res) {
+    res.send(data);
   });
-  
-  // API endpoint to list no of times customer booked a room
-  app.get('/customer/:name', (req, res) => {
-    const { name } = req.params;
-    const customer = customers.find(cust => cust.name ===  name);
-    if (!customer) {
-      res.status(404).json({ error: 'Customer not found' });
-      return;
+
+//get hall details
+
+app.get("/hall/details",(req,res)=>{
+       
+    if(req.query){
+    const {ifBooked}=req.query;
+    //url query 
+    console.log(ifBooked)
+
+    let filterdHall = data;
+    if(ifBooked){
+        filterdHall =  filterdHall.filter((halls)=>halls.ifBooked===ifBooked)
+
     }
-    else{
-    const customerBookings = customer.bookings.map(booking => {
-      const { roomName, date, startTime, endTime, id, bookedStatus, bookingDate } = booking;
-      return { name, roomName, date, startTime, endTime, bookingId: id, bookedStatus, bookingDate };
-    });
-    res.json(customerBookings);
-    }
-  });
-  
+    res.send(filterdHall)
+}else{
+    res.send(data)   
+}
+})
 
-// Starting the server
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-  });
+app.get("/hall/details/:id",(req,res)=>{
+    const {id}=req.params;
+    console.log(id)
+    const specificHall =data.find(hall=>hall.id===id)
+
+    res.send(specificHall)
+})
+
+//new hall
+
+//1.creating a room
+
+app.post("/hall/details/",(req,res)=>{
+    const newHall ={
+        id:data.length+1,
+        numberOfSeats:req.body.numberOfSeats,
+        amenities:req.body.amenities,
+        priceForAnHour:req.body.priceForAnHour,
+        RoomId:req.body.RoomId,
+        customerName:req.body.customerName,
+        date:req.body.date,
+        startTime:req.body.startTime,
+        endTime:req.body.endTime,
+        RoomName:req.body.RoomName,
+
+    }
+    console.log(req.body);
+    data.push(newHall);
+    res.send(data);
+ })
+
+ //2.Booking a Room
+
+ app.put("/hall/details/:id",(req,res)=>{
+    const {id}= req.params;
+    const halls = data.find(hall=>hall.id===id);
+    if(halls.ifBooked==="Booked"){
+        res.status(400).send("Hey the hall is already booked")
+    }else{
+    halls.date = req.body.date;
+    halls.startTime = req.body.startTime;
+    halls.endTime = req.body.endTime;
+    halls.customerName = req.body.customerName;
+    halls.ifBooked="Booked"
+    res.status(200).send(data)
+    }
+ })
+
+ //3.List all rooms with booked data
+
+ app.get("/booked/halls",(req,res)=>{
+    res
+    .status(200)
+    .send(
+        data.map((room)=>{
+            if(room.ifBooked==="Booked"){
+                return{
+                    "RoomName":room.RoomName,
+                    "ifBooked":room.ifBooked,
+                    "customerName":room.customerName,
+                    "date":room.date,
+                    "StartTime":room.startTime,
+                    "endTime":room.endTime
+                }
+            } else{
+                return{"RoomName":room.RoomName, "ifBooked":"vacant"}
+            }
+        })
+    )
+ })
+
+ //4.List all customers with booked data
+
+ app.get("/customer/details",(req,res)=>{
+    res
+    .status(200)
+    .send(
+        data.map((room)=>{
+            if(room.ifBooked==="Booked"){
+                return{
+                    "customerName":room.customerName,
+                    "RoomName":room.RoomName,
+                    "date":room.date,
+                    "StartTime":room.startTime,
+                    "endTime":room.endTime
+                }
+            } else{
+                
+                return{"RoomName":room.RoomName, "ifBooked":"vacant"}
+            }
+        })
+    )
+ })
+
+
+
+app.listen(9000, ()=>console.log(`server started in localhost:9000`))
