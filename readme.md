@@ -45,4 +45,4 @@ To create Postman documentation for this code, you can follow these steps:
 
 Remember to update your documentation if there are changes to your API.
 
-[live site] (https://hall-booking-api-hrtl.onrender.com/)
+[live site] (https://hall-booking-api-hrtl.onrender.com)
